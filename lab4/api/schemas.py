@@ -1,0 +1,10 @@
+from marshmallow import Schema, fields, validate
+
+class BookSchema(Schema):
+    id = fields.Int(required=True, dump_only=False)
+    title = fields.Str(required=True, validate=validate.Length(min=1))
+    author = fields.Str(required=True, validate=validate.Length(min=1))
+    year = fields.Int(required=True)
+
+book_schema = BookSchema()
+books_schema = BookSchema(many=True)
