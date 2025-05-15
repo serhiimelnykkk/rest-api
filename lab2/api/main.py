@@ -18,9 +18,15 @@ async def get_book(book_id: int):
 
 @app.post("/books", response_model=Book, status_code=201)
 async def add_book(book: Book):
-    if any(b["id"] == book.id for b in books):
-        raise HTTPException(status_code=400, detail="Book with this ID already exists.")
-    books.append(book.dict())
+    if books:
+        max_id = max(book["id"] for book in books)
+        new_id = max_id + 1
+    else:
+        new_id = 1
+        
+    book.id = new_id
+        
+    books.append(book)
     return book
 
 @app.delete("/books/{book_id}", status_code=200)

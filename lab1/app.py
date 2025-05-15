@@ -24,9 +24,14 @@ def add_book():
         book_data = book_schema.load(request.json)
     except ValidationError as err:
         return jsonify(err.messages), 400
-
-    if any(b["id"] == book_data["id"] for b in books):
-        return jsonify({"error": "Book with this ID already exists."}), 400
+    
+    if books:
+        max_id = max(book["id"] for book in books)
+        new_id = max_id + 1
+    else:
+        new_id = 1
+    
+    book_data["id"] = new_id
 
     books.append(book_data)
     return jsonify(book_schema.dump(book_data)), 201

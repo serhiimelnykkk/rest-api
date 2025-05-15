@@ -57,11 +57,15 @@ def add_book():
     except Exception as e:
         return jsonify({"error": "Internal server error during request processing"}), 500
 
-    if Book.query.get(book_data["id"]):
-        return jsonify({"error": "Book with this ID already exists."}), 400
+    max_id = db.session.query(db.func.max(Book.id)).scalar()
+
+    if max_id:
+        new_id = max_id + 1
+    else:
+        new_id = 1
 
     new_book = Book(
-        id=book_data["id"],
+        id=new_id,
         title=book_data["title"],
         author=book_data["author"],
         year=book_data["year"]
