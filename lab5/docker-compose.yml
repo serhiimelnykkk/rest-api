@@ -1,0 +1,33 @@
+services:
+  mongo_db_lab5:
+    image: mongo:latest
+    container_name: library_mongo_db_lab5
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo_data_lab5:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet --host localhost --port 27017 --username admin --password password
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  app_lab5:
+    build: .
+    container_name: library_fastapi_app_lab5
+    ports:
+      - "8000:8000"
+    depends_on:
+      mongo_db_lab5:
+        condition: service_healthy
+    environment:
+      MONGO_DETAILS: "mongodb://admin:password@mongo_db_lab5:27017/library_db_lab5?authSource=admin"
+    volumes:
+      - ./app:/usr/src/app/app
+
+volumes:
+  mongo_data_lab5: {}

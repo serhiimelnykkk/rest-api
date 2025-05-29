@@ -1,0 +1,38 @@
+services:
+  db_lab6:
+    image: postgres:13-alpine
+    container_name: library_postgres_db_lab6
+    volumes:
+      - postgres_data_lab6:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_USER: user_lab6
+      POSTGRES_PASSWORD: password_lab6
+      POSTGRES_DB: librarydb_lab6
+    ports:
+      - "5436:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user_lab6 -d librarydb_lab6"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app_lab6:
+    build: .
+    container_name: library_flask_restful_app_lab6
+    ports:
+      - "5002:5002"
+    depends_on:
+      db_lab6:
+        condition: service_healthy
+    environment:
+      FLASK_APP: run.py
+      FLASK_ENV: development
+      DATABASE_URL: postgresql://user_lab6:password_lab6@db_lab6:5432/librarydb_lab6
+    volumes:
+      - .:/app
+    command: >
+      sh -c "python -c 'from run import create_tables_and_seed_data; create_tables_and_seed_data()' &&
+             gunicorn -w 4 -b 0.0.0.0:5002 run:app"
+
+volumes:
+  postgres_data_lab6: {}
